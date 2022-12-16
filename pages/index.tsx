@@ -1,14 +1,30 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { Stripe } from "stripe";
+import PurchaseCard from "../components/PurchaseCard";
+import { useAppContext } from "../context/CartContext";
 
+type HomeProps = {
+  prices: Stripe.Price[]
+}
 
-export default function Home(props : { [key: string]: Stripe.Price[]}) {
+export default function Home(props : HomeProps) {
   const { prices } = props
   // console.log(prices);
 
   const router = useRouter()
+
+  const { dispatch } = useAppContext()
+
+  useEffect(() => {
+    dispatch({
+      type: 'set_prices',
+      value: prices
+    })
+    
+  }, [prices])
 
   const checkout = async () => {
     const lineItems = [{
@@ -34,17 +50,13 @@ export default function Home(props : { [key: string]: Stripe.Price[]}) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
         {
-          prices.map((price, index) => {
-            return <div key={index}>
-              {(price.product as Stripe.Product).name}
-            </div>
+          prices.map((price, index) => {            
+            return <PurchaseCard key={index} price={price}  />
           })
         }
 
-        <button onClick={checkout}>Checkout</button>
-      </main>
+        {/* <button onClick={checkout}>Checkout</button> */}
 
     </div>
   );
